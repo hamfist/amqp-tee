@@ -1,0 +1,36 @@
+LIBRARIES := github.com/modcloth-labs/prism
+TARGETS := $(LIBRARIES) github.com/modcloth-labs/prism/prism
+REV_VAR := github.com/modcloth-labs/prism.RevString
+VERSION_VAR := github.com/modcloth-labs/prism.VersionString
+REPO_VERSION := $(shell git describe --always --dirty --tags)
+REPO_REV := $(shell git rev-parse --sq HEAD)
+GOBUILD_VERSION_ARGS := -ldflags "-X $(REV_VAR) $(REPO_REV) -X $(VERSION_VAR) $(REPO_VERSION)"
+JOHNNY_DEPS_VERSION := v0.2.3
+
+all: build test
+
+build: deps
+	go get -x -n $(TARGETS)
+	go install $(GOBUILD_VERSION_ARGS) -x $(TARGETS)
+
+deps: johnny_deps
+	./johnny_deps
+
+johnny_deps:
+	curl -s -o $@ https://raw.github.com/VividCortex/johnny-deps/$(JOHNNY_DEPS_VERSION)/bin/johnny_deps
+	chmod +x $@
+
+test:
+	go test -i $(LIBRARIES)
+	go test -x -v $(LIBRARIES)
+
+clean:
+	go clean -x $(LIBS) || true
+	if [ -d $${GOPATH%%:*}/pkg ] ; then \
+	  find $${GOPATH%%:*}/pkg -name '*prism*' -exec rm -v {} \; ; \
+	fi
+
+distclean: clean
+	rm -f ./johnny_deps
+
+.PHONY: all build test
