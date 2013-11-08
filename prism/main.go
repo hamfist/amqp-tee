@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	_ "code.google.com/p/gosqlite/sqlite3"
 	_ "github.com/go-sql-driver/mysql"
@@ -42,6 +44,13 @@ var (
 )
 
 func init() {
+	usageString := `Usage: %s [options]
+	Consumes messages from RabbitMQ and writes to database.
+`
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, usageString, filepath.Base(os.Args[0]))
+		flag.PrintDefaults()
+	}
 	flag.StringVar(&databaseDriverFlag, "database-driver", "sqlite3", "Database driver to use (possible values: sqlite3, mysql, postgres)")
 	flag.StringVar(&databaseUriFlag, "database-uri", "messages.db", "Database uri")
   flag.Parse()
