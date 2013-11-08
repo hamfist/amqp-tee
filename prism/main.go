@@ -12,6 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"github.com/modcloth-labs/schema_ensurer"
+	"github.com/streadway/amqp"
 )
 
 var (
@@ -38,9 +39,11 @@ var (
 	  `,
 		},
 	}
-	logger             = log.New(os.Stderr, "[prism] ", log.LstdFlags)
+	logger = log.New(os.Stderr, "[prism] ", log.LstdFlags)
+
 	databaseDriverFlag string
 	databaseUriFlag    string
+	amqpUriFlag        string
 )
 
 func init() {
@@ -53,14 +56,17 @@ func init() {
 	}
 	flag.StringVar(&databaseDriverFlag, "database-driver", "sqlite3", "Database driver to use (possible values: sqlite3, mysql, postgres)")
 	flag.StringVar(&databaseUriFlag, "database-uri", "messages.db", "Database uri")
-  flag.Parse()
+	flag.StringVar(&amqpUriFlag, "amqp-uri", "amqp://guest:guest@localhost:5672/", "AMQP connection URI")
+	flag.Parse()
 }
 
 func main() {
 	var (
-		db            *sql.DB
-		schemaEnsurer *sensurer.SchemaEnsurer
-		err           error
+		db             *sql.DB
+		schemaEnsurer  *sensurer.SchemaEnsurer
+		amqpConnection *amqp.Connection
+		amqpChannel    *amqp.Channel
+		err            error
 	)
 
 	if db, err = sql.Open(databaseDriverFlag, databaseUriFlag); err != nil {
@@ -73,4 +79,17 @@ func main() {
 		log.Printf("Could not create schema: %s", err)
 		os.Exit(1)
 	}
+
+	if amqpConnection, err = amqp.Dial(amqpUriFlag); err != nil {
+		log.Printf("Could not connect to RabbitMQ: %s", err)
+		os.Exit(1)
+	}
+	defer amqpConnection.Close()
+
+	if amqpChannel, err = amqpConnection.Channel(); err != nil {
+		log.Printf("Could not create AMQP channel: %s", err)
+		os.Exit(1)
+	}
+
+  _ = amqpChannel
 }
