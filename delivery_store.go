@@ -17,7 +17,7 @@ import (
 var (
 	migrations = map[string][]string{
 		"20131108000000": {`
-	  CREATE TABLE IF NOT EXISTS deliverys(
+	  CREATE TABLE IF NOT EXISTS messages(
 		uuid char(32),
 
     content_type character varying(256),
@@ -42,7 +42,7 @@ var (
 		},
 	}
 	insertSql = `
-      INSERT INTO deliverys(
+      INSERT INTO messages(
         uuid,
         content_type,
         content_encoding,
@@ -68,7 +68,7 @@ type DeliveryStore struct {
 }
 
 func NewDeliveryStore(databaseDriver string, databaseUri string) (deliveryStore *DeliveryStore, err error) {
-	me = &DeliveryStore{}
+	me := &DeliveryStore{}
 
 	if me.db, err = sql.Open(databaseDriver, databaseUri); err != nil {
 		return nil, err

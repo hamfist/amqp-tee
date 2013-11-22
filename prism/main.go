@@ -37,11 +37,9 @@ func init() {
 
 func main() {
 	var (
-		amqpConnection *amqp.Connection
-		amqpChannel    *amqp.Channel
-		deliveryStore  *prism.DeliveryStore
-		deliveries     <-chan (amqp.Delivery)
-		err            error
+		amqpConsumer  *prism.AMQPConsumer
+		deliveryStore *prism.DeliveryStore
+		err           error
 	)
 
 	if deliveryStore, err = prism.NewDeliveryStore(databaseDriverFlag, databaseUriFlag); err != nil {
@@ -51,35 +49,20 @@ func main() {
 
 	defer deliveryStore.Close()
 
-	if amqpConnection, err = amqp.Dial(amqpUriFlag); err != nil {
+	if amqpConsumer, err = prism.NewAMQPConsumer(amqpUriFlag, queueNameFlag); err != nil {
 		log.Printf("Could not connect to RabbitMQ: %s", err)
 		os.Exit(1)
 	}
-	defer amqpConnection.Close()
+	defer amqpConsumer.Close()
 
-	if amqpChannel, err = amqpConnection.Channel(); err != nil {
-		log.Printf("Could not create AMQP channel: %s", err)
-		os.Exit(1)
-	}
-
-	if deliveries, err = amqpChannel.Consume(queueNameFlag, "", false, false, false, false, nil); err != nil {
-		log.Printf("Could not consume from RabbitMQ: %s", err)
-		os.Exit(1)
-	}
-
-	for delivery := range deliveries {
+	amqpConsumer.Consume(func(delivery *amqp.Delivery) (err error) {
 		log.Printf("Consuming %+v", delivery)
 
-		if err = deliveryStore.Store(&delivery); err != nil {
-			log.Printf("Failed to consume: %s", err)
-			if err = delivery.Nack(false, true); err != nil {
-				log.Printf("Failed to nack: %s", err)
-			}
-			continue
+		if err = deliveryStore.Store(delivery); err != nil {
+			return err
 		}
 
-		if err = delivery.Ack(false); err != nil {
-			log.Printf("Failed to ack: %s", err)
-		}
-	}
+		return nil
+	})
+
 }
