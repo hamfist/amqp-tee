@@ -17,6 +17,8 @@ apt-get install -yq \
   mercurial \
   vim-nox
 
+/usr/lib/rabbitmq/bin/rabbitmq-plugins enable rabbitmq_management
+
 su - vagrant -c bash <<EOBASH
 #!/bin/bash
 set -x
@@ -39,6 +41,12 @@ fi
 
 mkdir -p /home/vagrant/gopath/src/github.com/modcloth-labs/
 ln -svf /vagrant /home/vagrant/gopath/src/github.com/modcloth-labs/prism
+
+mkdir -p ~/bin
+
+wget http://guest:guest@localhost:55672/cli/rabbitmqadmin -O ~/bin/rabbitmqadmin
+
+chmod +x ~/bin/rabbitmqadmin
 
 EOBASH
 echo 'Ding!'
