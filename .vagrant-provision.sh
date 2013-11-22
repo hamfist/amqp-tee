@@ -9,6 +9,7 @@ apt-get update -yq
 apt-get install -yq \
   bison \
   sqlite3 \
+  libsqlite3-dev \
   libsqlite0\
   rabbitmq-server \
   build-essential \
