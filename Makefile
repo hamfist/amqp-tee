@@ -1,7 +1,7 @@
-LIBRARIES := github.com/modcloth-labs/prism
-TARGETS := $(LIBRARIES) github.com/modcloth-labs/prism/prism
-REV_VAR := github.com/modcloth-labs/prism.RevString
-VERSION_VAR := github.com/modcloth-labs/prism.VersionString
+LIBRARIES := github.com/modcloth-labs/amqp-tee
+TARGETS := $(LIBRARIES) github.com/modcloth-labs/amqp-tee/amqp-tee
+REV_VAR := github.com/modcloth-labs/amqp-tee.RevString
+VERSION_VAR := github.com/modcloth-labs/amqp-tee.VersionString
 REPO_VERSION := $(shell git describe --always --dirty --tags)
 REPO_REV := $(shell git rev-parse --sq HEAD)
 GOBUILD_VERSION_ARGS := -ldflags "-X $(REV_VAR) $(REPO_REV) -X $(VERSION_VAR) $(REPO_VERSION)"
@@ -27,7 +27,7 @@ test:
 clean:
 	go clean -x $(LIBS) || true
 	if [ -d $${GOPATH%%:*}/pkg ] ; then \
-	  find $${GOPATH%%:*}/pkg -name '*prism*' -exec rm -v {} \; ; \
+	  find $${GOPATH%%:*}/pkg -name '*amqp-tee*' -exec rm -v {} \; ; \
 	fi
 
 distclean: clean

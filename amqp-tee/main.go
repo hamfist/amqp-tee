@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/modcloth-labs/prism"
+	"github.com/modcloth-labs/amqp-tee"
 	"github.com/streadway/amqp"
 )
 
 var (
-	logger = log.New(os.Stderr, "[prism] ", log.LstdFlags)
+	logger = log.New(os.Stderr, "[amqp-tee] ", log.LstdFlags)
 
 	databaseDriverFlag string
 	databaseUriFlag    string
@@ -37,19 +37,19 @@ func init() {
 
 func main() {
 	var (
-		amqpConsumer  *prism.AMQPConsumer
-		deliveryStore *prism.DeliveryStore
+		amqpConsumer  *amqptee.AMQPConsumer
+		deliveryStore *amqptee.DeliveryStore
 		err           error
 	)
 
-	if deliveryStore, err = prism.NewDeliveryStore(databaseDriverFlag, databaseUriFlag); err != nil {
+	if deliveryStore, err = amqptee.NewDeliveryStore(databaseDriverFlag, databaseUriFlag); err != nil {
 		log.Printf("Could not create message store: %s", err)
 		os.Exit(1)
 	}
 
 	defer deliveryStore.Close()
 
-	if amqpConsumer, err = prism.NewAMQPConsumer(amqpUriFlag, queueNameFlag); err != nil {
+	if amqpConsumer, err = amqptee.NewAMQPConsumer(amqpUriFlag, queueNameFlag); err != nil {
 		log.Printf("Could not connect to RabbitMQ: %s", err)
 		os.Exit(1)
 	}

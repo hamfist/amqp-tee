@@ -1,4 +1,4 @@
-package prism
+package amqptee
 
 import (
 	"github.com/streadway/amqp"
