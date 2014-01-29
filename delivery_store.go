@@ -3,6 +3,7 @@ package amqptee
 import (
 	"database/sql"
 	"io/ioutil"
+  "fmt"
 	"log"
 	"time"
 
@@ -15,9 +16,9 @@ import (
 )
 
 var (
-	migrations = map[string][]string{
-		"20131108000000": {`
-	  CREATE TABLE IF NOT EXISTS messages(
+	migrationFormats = map[string][]string{
+		"20131108000000_%s": {`
+	  CREATE TABLE IF NOT EXISTS %s(
 		uuid char(32),
 
     content_type character varying(256),
@@ -41,8 +42,8 @@ var (
 	  `,
 		},
 	}
-	insertSql = `
-      INSERT INTO messages(
+	insertSqlFormat = `
+      INSERT INTO %s(
         uuid,
         content_type,
         content_encoding,
@@ -67,23 +68,41 @@ type DeliveryStore struct {
 	insertStatement *sql.Stmt
 }
 
-func NewDeliveryStore(databaseDriver string, databaseUri string) (deliveryStore *DeliveryStore, err error) {
+func NewDeliveryStore(databaseDriver string, databaseUri string, table string) (deliveryStore *DeliveryStore, err error) {
 	me := &DeliveryStore{}
 
 	if me.db, err = sql.Open(databaseDriver, databaseUri); err != nil {
 		return nil, err
 	}
 
-	schemaEnsurer := sensurer.New(me.db, migrations, log.New(ioutil.Discard, "", 0))
-	if err = schemaEnsurer.EnsureSchema(); err != nil {
-		return nil, err
-	}
+  if err = me.runMigrations(table); err != nil {
+    return nil, err
+  }
 
-	if me.insertStatement, err = me.db.Prepare(insertSql); err != nil {
+	if me.insertStatement, err = me.db.Prepare(fmt.Sprintf(insertSqlFormat, table)); err != nil {
 		return nil, err
 	}
 
 	return me, nil
+}
+
+func (me *DeliveryStore) runMigrations(table string) (err error) {
+  migrations := map[string][]string{}
+
+  for migrationFormatTag, migrationStatementFormats := range migrationFormats {
+    for _, migrationStatementFormat := range migrationStatementFormats {
+      migrations[fmt.Sprintf(migrationFormatTag, table)] = append(
+        migrations[fmt.Sprintf(migrationFormatTag, table)],
+        fmt.Sprintf(migrationStatementFormat, table))
+    }
+  }
+
+	schemaEnsurer := sensurer.New(me.db, migrations, log.New(ioutil.Discard, "", 0))
+	if err = schemaEnsurer.EnsureSchema(); err != nil {
+		return err
+	}
+
+  return nil
 }
 
 func (me *DeliveryStore) Store(delivery *amqp.Delivery) (err error) {

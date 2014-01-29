@@ -31,7 +31,7 @@ func init() {
 	flag.StringVar(&databaseDriverFlag, "database-driver", "sqlite3", "Database driver to use (possible values: sqlite3, mysql, postgres)")
 	flag.StringVar(&databaseUriFlag, "database-uri", "messages.db", "Database uri")
 	flag.StringVar(&amqpUriFlag, "amqp-uri", "amqp://guest:guest@localhost:5672/", "AMQP connection URI")
-	flag.StringVar(&queueNameFlag, "queue", "default", "Queue to consume from")
+	flag.StringVar(&queueNameFlag, "queue", "default", "Queue to consume from (also name of table written to)")
 	flag.Parse()
 }
 
@@ -42,7 +42,7 @@ func main() {
 		err           error
 	)
 
-	if deliveryStore, err = amqptee.NewDeliveryStore(databaseDriverFlag, databaseUriFlag); err != nil {
+	if deliveryStore, err = amqptee.NewDeliveryStore(databaseDriverFlag, databaseUriFlag, queueNameFlag); err != nil {
 		log.Printf("Could not create message store: %s", err)
 		os.Exit(1)
 	}
