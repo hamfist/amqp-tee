@@ -1,4 +1,4 @@
 /johnny_deps
 /*.db
 /.vagrant
-
+/.build
