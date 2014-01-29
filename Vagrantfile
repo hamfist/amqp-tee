@@ -10,5 +10,5 @@ Vagrant.configure('2') do |config|
   config.vm.provision :shell, path: '.vagrant-provision.sh'
   config.vm.define 'amqp-tee' do |host|
   end
-  config.vm.synced_folder '.', '/gopath/src/github.com/modcloth/amqp-tee'
+  config.vm.synced_folder '.', '/gopath/src/github.com/modcloth-labs/amqp-tee'
 end
