@@ -1,3 +1,4 @@
 /johnny_deps
-*.db
+/*.db
 /.vagrant
+
