@@ -20,34 +20,19 @@ apt-get install -yq \
 
 /usr/lib/rabbitmq/bin/rabbitmq-plugins enable rabbitmq_management
 
-su - vagrant -c bash <<EOBASH
-#!/bin/bash
-set -x
-set -e
-
-ln -svf /vagrant/.vagrant-skel/bashrc /home/vagrant/.bashrc
-ln -svf /vagrant/.vagrant-skel/profile /home/vagrant/.profile
-
-source ~/.profile
-if ! which gvm >/dev/null ; then
-  set +x
-  bash < <(curl -s https://raw.github.com/moovweb/gvm/master/binscripts/gvm-installer)
-  set -x
-fi
-source ~/.profile
-gvm get
-if [ -z "\$(gvm list | grep go1.1.2)" ] ; then
-  gvm install go1.1.2
+if ! docker -v ; then
+  curl -s 'https://get.docker.io' | sh
 fi
 
-mkdir -p /home/vagrant/gopath/src/github.com/modcloth-labs/
-ln -svf /vagrant /home/vagrant/gopath/src/github.com/modcloth-labs/prism
+if ! go version ; then
+  curl -s -L 'https://go.googlecode.com/files/go1.2.linux-amd64.tar.gz' | \
+    tar xzf - -C /usr/local/
+  ln -sv /usr/local/go/bin/* /usr/local/bin/
+fi
 
-mkdir -p ~/bin
+mkdir -p /gopath
+chown -R vagrant:vagrant /gopath
 
-wget http://guest:guest@localhost:55672/cli/rabbitmqadmin -O ~/bin/rabbitmqadmin
+su - vagrant -c /vagrant/.vagrant-provision-as-vagrant.sh
 
-chmod +x ~/bin/rabbitmqadmin
-
-EOBASH
 echo 'Ding!'

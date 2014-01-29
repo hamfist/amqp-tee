@@ -6,17 +6,8 @@ if [ -n "$BASH_VERSION" ]; then
 fi
 
 if [ -d "$HOME/bin" ] ; then
-  PATH="$HOME/bin:$PATH"
+  export PATH="$HOME/bin:$PATH"
 fi
 
-if [ -d "$HOME/.gvm/bin" ] ; then
-  PATH="$HOME/.gvm/bin:$PATH"
-fi
-
-[[ -s "$HOME/.gvm/scripts/gvm" ]] && source "$HOME/.gvm/scripts/gvm"
-
-if which gvm >/dev/null ; then
-  gvm use go1.1.2
-fi
-
-GOPATH=~/gopath
+export GOPATH=/gopath
+export PATH=$PATH:$GOPATH/bin
