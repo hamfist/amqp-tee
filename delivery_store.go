@@ -19,7 +19,7 @@ var (
 	migrationFormats = map[string][]string{
 		"20131108000000_%s": {`
 	  CREATE TABLE IF NOT EXISTS %s(
-		uuid char(32),
+		uuid char(36),
 
     content_type character varying(256),
     content_encoding character varying(256),
