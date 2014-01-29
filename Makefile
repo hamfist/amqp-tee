@@ -6,6 +6,7 @@ REPO_VERSION := $(shell git describe --always --dirty --tags)
 REPO_REV := $(shell git rev-parse --sq HEAD)
 GOBUILD_VERSION_ARGS := -ldflags "-X $(REV_VAR) $(REPO_REV) -X $(VERSION_VAR) $(REPO_VERSION)"
 JOHNNY_DEPS_VERSION := v0.2.3
+DOCKER ?= sudo docker
 
 all: build test
 
@@ -33,4 +34,9 @@ clean:
 distclean: clean
 	rm -f ./johnny_deps
 
-.PHONY: all build test
+container: build
+	mkdir -p .build
+	cp $${GOPATH%%:*}/bin/amqp-tee .build
+	$(DOCKER) build -t quay.io/modcloth/amqp-tee:$(REPO_VERSION) .
+
+.PHONY: all build test container
