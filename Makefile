@@ -18,7 +18,7 @@ deps: johnny_deps
 	./johnny_deps
 
 johnny_deps:
-	curl -s -o $@ https://raw.github.com/VividCortex/johnny-deps/$(JOHNNY_DEPS_VERSION)/bin/johnny_deps
+	curl -L -s -o $@ https://raw.github.com/VividCortex/johnny-deps/$(JOHNNY_DEPS_VERSION)/bin/johnny_deps
 	chmod +x $@
 
 test:
