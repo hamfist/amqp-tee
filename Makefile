@@ -1,42 +1,50 @@
-LIBRARIES := github.com/modcloth-labs/amqp-tee
-TARGETS := $(LIBRARIES) github.com/modcloth-labs/amqp-tee/amqp-tee
+SHELL := /bin/bash
 REV_VAR := github.com/modcloth-labs/amqp-tee.RevString
 VERSION_VAR := github.com/modcloth-labs/amqp-tee.VersionString
 REPO_VERSION := $(shell git describe --always --dirty --tags)
 REPO_REV := $(shell git rev-parse --sq HEAD)
 GOBUILD_VERSION_ARGS := -ldflags "-X $(REV_VAR) $(REPO_REV) -X $(VERSION_VAR) $(REPO_VERSION)"
-JOHNNY_DEPS_VERSION := v0.2.3
-DOCKER ?= sudo docker
 
+.PHONY: all
 all: build test
 
-build: deps
-	go get -x -n $(TARGETS)
-	go install $(GOBUILD_VERSION_ARGS) -x $(TARGETS)
-
-deps: johnny_deps
-	./johnny_deps
-
-johnny_deps:
-	curl -L -s -o $@ https://raw.github.com/VividCortex/johnny-deps/$(JOHNNY_DEPS_VERSION)/bin/johnny_deps
-	chmod +x $@
-
-test:
-	go test -i $(LIBRARIES)
-	go test -x -v $(LIBRARIES)
-
+.PHONY: clean
 clean:
-	go clean -x $(LIBS) || true
-	if [ -d $${GOPATH%%:*}/pkg ] ; then \
-	  find $${GOPATH%%:*}/pkg -name '*amqp-tee*' -exec rm -v {} \; ; \
-	fi
+	go clean -x ./...
 
-distclean: clean
-	rm -f ./johnny_deps
+.PHONY: build
+build: deps
+	go install $(GOBUILD_VERSION_ARGS) -x ./...
 
-container: build
-	mkdir -p .build
-	cp $${GOPATH%%:*}/bin/amqp-tee .build
-	$(DOCKER) build -t quay.io/modcloth/amqp-tee:$(REPO_VERSION) .
+.PHONY: savedeps
+savedeps:
+	godep save -copy=false ./...
 
-.PHONY: all build test container
+.PHONY: deps
+deps:
+	godep restore
+
+.PHONY: test
+test: deps
+	go test ./...
+
+.PHONY: fmtpolice
+fmtpolice: fmt lint
+
+.PHONY: fmt
+fmt:
+	@set -e ; \
+	  for f in $(shell git ls-files '*.go'); do \
+	  gofmt $$f | diff -u $$f - ; \
+	  done
+
+.PHONY: lint
+lint:
+	@for file in $(shell git ls-files '*.go') ; do \
+	  if [[ ! "$$(golint $$file)" =~ ^[[:blank:]]*$$ ]] ; then \
+	  $(MAKE) lintv && exit 1 ; fi \
+	  done
+
+.PHONY: lintv
+lintv:
+	@for file in $(shell git ls-files '*.go') ; do $(GOPATH)/bin/golint $$file ; done
