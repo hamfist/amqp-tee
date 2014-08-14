@@ -7,8 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/modcloth-labs/amqp-tee"
 	"github.com/streadway/amqp"
+
+	"github.com/modcloth-labs/amqp-tee"
 )
 
 var (

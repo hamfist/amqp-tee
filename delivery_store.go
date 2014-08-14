@@ -7,9 +7,9 @@ import (
 	"log"
 	"time"
 
-	_ "code.google.com/p/gosqlite/sqlite3"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
+	_ "code.google.com/p/gosqlite/sqlite3" //Register sqlite3 driver
+	_ "github.com/go-sql-driver/mysql"     //Register mysql driver
+	_ "github.com/lib/pq"                  //Register postgresql driver
 	"github.com/modcloth-labs/schema_ensurer"
 	"github.com/nu7hatch/gouuid"
 	"github.com/streadway/amqp"
@@ -82,19 +82,21 @@ var (
   `
 )
 
+// DeliveryStore represents a backing database to insert the AMQP messages into
 type DeliveryStore struct {
 	db              *sql.DB
 	insertStatement *sql.Stmt
 }
 
-func NewDeliveryStore(databaseDriver string, databaseUri string, table string) (deliveryStore *DeliveryStore, err error) {
-	me := &DeliveryStore{}
+// NewDeliveryStore open a connection to the given database and initialize the schema
+func NewDeliveryStore(databaseDriver string, databaseURI string, table string) (deliveryStore *DeliveryStore, err error) {
+	ds := &DeliveryStore{}
 
-	if me.db, err = sql.Open(databaseDriver, databaseUri); err != nil {
+	if ds.db, err = sql.Open(databaseDriver, databaseURI); err != nil {
 		return nil, err
 	}
 
-	if err = me.runMigrations(table); err != nil {
+	if err = ds.runMigrations(table); err != nil {
 		return nil, err
 	}
 
@@ -103,14 +105,14 @@ func NewDeliveryStore(databaseDriver string, databaseUri string, table string) (
 		insertSqlFormat = insertSqlPostgresFormat
 	}
 
-	if me.insertStatement, err = me.db.Prepare(fmt.Sprintf(insertSqlFormat, table)); err != nil {
+	if ds.insertStatement, err = ds.db.Prepare(fmt.Sprintf(insertSqlFormat, table)); err != nil {
 		return nil, err
 	}
 
-	return me, nil
+	return ds, nil
 }
 
-func (me *DeliveryStore) runMigrations(table string) (err error) {
+func (ds *DeliveryStore) runMigrations(table string) (err error) {
 	migrations := map[string][]string{}
 
 	for migrationFormatTag, migrationStatementFormats := range migrationFormats {
@@ -121,7 +123,7 @@ func (me *DeliveryStore) runMigrations(table string) (err error) {
 		}
 	}
 
-	schemaEnsurer := sensurer.New(me.db, migrations, log.New(ioutil.Discard, "", 0))
+	schemaEnsurer := sensurer.New(ds.db, migrations, log.New(ioutil.Discard, "", 0))
 	if err = schemaEnsurer.EnsureSchema(); err != nil {
 		return err
 	}
@@ -129,7 +131,8 @@ func (me *DeliveryStore) runMigrations(table string) (err error) {
 	return nil
 }
 
-func (me *DeliveryStore) Store(delivery *amqp.Delivery) (err error) {
+// Store stores the given delivery object in the database
+func (ds *DeliveryStore) Store(delivery *amqp.Delivery) (err error) {
 	var (
 		u4 *uuid.UUID
 	)
@@ -138,7 +141,7 @@ func (me *DeliveryStore) Store(delivery *amqp.Delivery) (err error) {
 		return err
 	}
 
-	_, err = me.insertStatement.Exec(
+	_, err = ds.insertStatement.Exec(
 		u4.String(),
 		delivery.ContentType,
 		delivery.ContentEncoding,
@@ -158,6 +161,7 @@ func (me *DeliveryStore) Store(delivery *amqp.Delivery) (err error) {
 	return err
 }
 
-func (me *DeliveryStore) Close() {
-	me.db.Close()
+// Close closes the connection to the database
+func (ds *DeliveryStore) Close() {
+	ds.db.Close()
 }

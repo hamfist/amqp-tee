@@ -4,32 +4,37 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// AMQPConsumer pulls acssages from an AMQP queue and executes a callback for each
 type AMQPConsumer struct {
 	amqpConnection *amqp.Connection
 	amqpChannel    *amqp.Channel
 	deliveries     <-chan (amqp.Delivery)
 }
 
-func NewAMQPConsumer(amqpUri string, queueName string) (amqpConsumer *AMQPConsumer, err error) {
-	me := &AMQPConsumer{}
+// NewAMQPConsumer create a new AMQPConsumer, connect to an AMQP service, and start consuming from the queue
+func NewAMQPConsumer(amqpURI string, queueName string) (amqpConsumer *AMQPConsumer, err error) {
+	ac := &AMQPConsumer{}
 
-	if me.amqpConnection, err = amqp.Dial(amqpUri); err != nil {
+	if ac.amqpConnection, err = amqp.Dial(amqpURI); err != nil {
 		return nil, err
 	}
 
-	if me.amqpChannel, err = me.amqpConnection.Channel(); err != nil {
+	if ac.amqpChannel, err = ac.amqpConnection.Channel(); err != nil {
 		return nil, err
 	}
 
-	if me.deliveries, err = me.amqpChannel.Consume(queueName, "", false, false, false, false, nil); err != nil {
+	if ac.deliveries, err = ac.amqpChannel.Consume(queueName, "", false, false, false, false, nil); err != nil {
 		return nil, err
 	}
 
-	return me, nil
+	return ac, nil
 }
 
-func (me *AMQPConsumer) Consume(deliveryHandler func(*amqp.Delivery) (err error)) (err error) {
-	for delivery := range me.deliveries {
+// Consume start consuming all acssages and execute the callback for each
+// if the callback returns an error, this function exits with the same error
+// err's if it cannot ack
+func (ac *AMQPConsumer) Consume(deliveryHandler func(*amqp.Delivery) (err error)) (err error) {
+	for delivery := range ac.deliveries {
 		if err = deliveryHandler(&delivery); err != nil {
 			return err
 		}
@@ -42,7 +47,8 @@ func (me *AMQPConsumer) Consume(deliveryHandler func(*amqp.Delivery) (err error)
 	return nil
 }
 
-func (me *AMQPConsumer) Close() {
-	me.amqpChannel.Close()
-	me.amqpConnection.Close()
+// Close close connections to AMQP service
+func (ac *AMQPConsumer) Close() {
+	ac.amqpChannel.Close()
+	ac.amqpConnection.Close()
 }
