@@ -57,8 +57,6 @@ func main() {
 	defer amqpConsumer.Close()
 
 	if err = amqpConsumer.Consume(func(delivery *amqp.Delivery) (err error) {
-		log.Printf("Consuming %+v", delivery)
-
 		if err = deliveryStore.Store(delivery); err != nil {
 			return err
 		}
