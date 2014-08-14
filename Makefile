@@ -7,7 +7,7 @@ GOBUILD_VERSION_ARGS := -ldflags "-X $(REV_VAR) $(REPO_REV) -X $(VERSION_VAR) $(
 DOCKER ?= sudo docker
 
 .PHONY: all
-all: build test
+all: clean build test
 
 .PHONY: clean
 clean:
