@@ -2,7 +2,7 @@
 set -x
 set -e
 
-ln -svf /gopath/src/github.com/modcloth-labs/amqp-tee ~/amqp-tee
+ln -svf /gopath/src/github.com/modcloth-labs/amqp-tee ~/
 ln -svf /vagrant/.vagrant-skel/bashrc /home/vagrant/.bashrc
 ln -svf /vagrant/.vagrant-skel/profile /home/vagrant/.profile
 
