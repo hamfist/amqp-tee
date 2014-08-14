@@ -1,0 +1,15 @@
+---
+language: go
+go:
+- 1.3
+before_install:
+- go get github.com/kr/godep
+- go get github.com/golang/lint/golint
+install: make build
+script:
+- make fmtpolice
+- make test
+notifications:
+  email:
+    recipients:
+      - flintknappers+amqp-tee@modcloth.com
