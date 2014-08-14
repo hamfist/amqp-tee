@@ -4,6 +4,7 @@ VERSION_VAR := github.com/modcloth-labs/amqp-tee.VersionString
 REPO_VERSION := $(shell git describe --always --dirty --tags)
 REPO_REV := $(shell git rev-parse --sq HEAD)
 GOBUILD_VERSION_ARGS := -ldflags "-X $(REV_VAR) $(REPO_REV) -X $(VERSION_VAR) $(REPO_VERSION)"
+DOCKER ?= sudo docker
 
 .PHONY: all
 all: build test
@@ -48,3 +49,9 @@ lint:
 .PHONY: lintv
 lintv:
 	@for file in $(shell git ls-files '*.go') ; do $(GOPATH)/bin/golint $$file ; done
+
+.PHONY: container
+container: build
+	mkdir -p .build
+	cp $${GOPATH%%:*}/bin/amqp-tee .build
+	$(DOCKER) build -t quay.io/modcloth/amqp-tee:$(REPO_VERSION) .
