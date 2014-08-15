@@ -30,7 +30,7 @@ func NewAMQPConsumer(amqpURI string, queueName string) (amqpConsumer *AMQPConsum
 	return ac, nil
 }
 
-// Consume start consuming all acssages and execute the callback for each
+// Consume start consuming all messages and execute the callback for each
 // if the callback returns an error, this function exits with the same error
 // err's if it cannot ack
 func (ac *AMQPConsumer) Consume(deliveryHandler func(*amqp.Delivery) (err error)) (err error) {
