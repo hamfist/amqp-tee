@@ -1,2 +1,36 @@
-github.com/jmoiron/sqlx                     3e596e09a68a8930b44d8d32e4fa9edecaaf462e
-github.com/modcloth-labs/schema_ensurer     0.1.0
+{
+	"ImportPath": "github.com/modcloth-labs/amqp-tee",
+	"GoVersion": "go1.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/gosqlite/sqlite3",
+			"Comment": "null-16",
+			"Rev": "74691fb6f83716190870cde1b658538dd4b18eb0"
+		},
+		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "go1",
+			"Rev": "9a7aa3606b82e2081a13a008ada88dfdb96c20fd"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Rev": "3c5c5bd6383b42aec97b5aa39fba2cddd35aea36"
+		},
+		{
+			"ImportPath": "github.com/modcloth-labs/schema_ensurer",
+			"Comment": "0.1.0",
+			"Rev": "f6680402abf2d2437a9f547334780411117b76c2"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
+			"ImportPath": "github.com/streadway/amqp",
+			"Rev": "affa76d059881a8849a73d78ef5629004b9bf1f7"
+		}
+	]
+}

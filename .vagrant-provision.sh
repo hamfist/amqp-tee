@@ -24,10 +24,10 @@ if ! docker -v ; then
   curl -s 'https://get.docker.io' | sh
 fi
 
-if ! go version ; then
-  curl -s -L 'https://go.googlecode.com/files/go1.2.linux-amd64.tar.gz' | \
+if [[ ! $(go version | grep 1.3) ]] ; then
+  curl -s -L 'http://golang.org/dl/go1.3.linux-amd64.tar.gz' | \
     tar xzf - -C /usr/local/
-  ln -sv /usr/local/go/bin/* /usr/local/bin/
+  ln -sfv /usr/local/go/bin/* /usr/local/bin/
 fi
 
 mkdir -p /gopath
