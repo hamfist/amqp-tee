@@ -7,7 +7,7 @@ env:
   - PATH=$PATH:$HOME/gopath/bin
 before_install:
 - go get github.com/kr/godep
-- go get github.com/golang/lint/golint
+- go get golang.org/x/lint/golint
 install: make build
 script:
 - make fmtpolice
